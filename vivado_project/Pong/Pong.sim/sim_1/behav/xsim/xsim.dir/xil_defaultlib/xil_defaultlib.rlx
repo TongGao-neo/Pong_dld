@@ -3,6 +3,10 @@
 Nov 18 2020
 09:47:47
 C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_ai_paddle.v,1779682528,verilog,,,C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,tb_ai_paddle,,,../../../../../../source_code,,,,,
-C:/Users/Littlebanbrick/Desktop/Pong/source_code/ai_paddle.v,1779680306,verilog,,C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_ai_paddle.v,C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,ai_paddle,,,../../../../../../source_code,,,,,
-C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,1779676772,verilog,,,,,,,,,,,,
+C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_game_logic.v,1779677033,verilog,,,C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,tb_game_logic,,,../../../../../../source_code,,,,,
+C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_seg_display.v,1779677055,verilog,,,,tb_seg_display,,,../../../../../../source_code,,,,,
+C:/Users/Littlebanbrick/Desktop/Pong/source_code/ai_paddle.v,1779691489,verilog,,C:/Users/Littlebanbrick/Desktop/Pong/source_code/game_logic.v,C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,ai_paddle,,,../../../../../../source_code,,,,,
+C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,1779693064,verilog,,,,,,,,,,,,
+C:/Users/Littlebanbrick/Desktop/Pong/source_code/game_logic.v,1779693623,verilog,,C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_game_logic.v,C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,game_logic,,,../../../../../../source_code,,,,,
+C:/Users/Littlebanbrick/Desktop/Pong/source_code/seg_display.v,1779691529,verilog,,C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_seg_display.v,C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,seg_display,,,../../../../../../source_code,,,,,
 C:/Users/Littlebanbrick/Desktop/Pong/vivado_project/Pong/Pong.sim/sim_1/behav/xsim/glbl.v,1605673889,verilog,,,,glbl,,,,,,,,

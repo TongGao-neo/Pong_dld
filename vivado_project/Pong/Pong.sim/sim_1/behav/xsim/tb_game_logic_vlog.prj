@@ -1,0 +1,11 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  --include "../../../../../../source_code" \
+"../../../../../../source_code/ai_paddle.v" \
+"../../../../../../source_code/game_logic.v" \
+"../../../../../../sim/tb_game_logic.v" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

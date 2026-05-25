@@ -34,6 +34,7 @@ Pong_Project/
 ├── README.md
 ├── CONTRIBUTORS.md
 ├── docs/
+|   ├── wave_images/       # 波形图图片
 │   └── Final_Report.pdf   # 设计报告
 ├── source_code/           # 所有可综合的 Verilog 源码
 │   ├── defines.vh         # 全局宏定义（屏幕尺寸、球拍大小等）
@@ -53,7 +54,8 @@ Pong_Project/
 │   ├── tb_game_logic.v
 │   ├── tb_vga_render.v
 │   ├── tb_keypad_scanner.v
-│   └── tb_ps2_keyboard.v
+│   ├── tb_ps2_keyboard.v
+|   └── wave_configs/      # 波形配置文件
 ├── constraints/
 │   └── pong.xdc           # 引脚与时序约束
 └── vivado_project/        # Vivado 工程（重置后）

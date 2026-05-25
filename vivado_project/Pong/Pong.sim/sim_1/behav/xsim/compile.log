@@ -1,4 +1,0 @@
-INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/Littlebanbrick/Desktop/Pong/source_code/game_logic.v" into library xil_defaultlib
-INFO: [VRFC 10-311] analyzing module game_logic
-INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_game_logic.v" into library xil_defaultlib
-INFO: [VRFC 10-311] analyzing module tb_game_logic

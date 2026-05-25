@@ -37,9 +37,10 @@ Pong_Project/
 │   └── Final_Report.pdf   # 设计报告
 ├── source_code/           # 所有可综合的 Verilog 源码
 │   ├── defines.vh         # 全局宏定义（屏幕尺寸、球拍大小等）
-│   ├── pong_top.v         # 顶层模块
+│   ├── Top.v              # 顶层模块
 │   ├── clk_wiz.v          # 时钟 IP 例化（25.175MHz）
-│   ├── game_logic.v       # 主状态机 + 球物理 + 碰撞检测 + AI
+│   ├── game_logic.v       # 主状态机 + 球物理 + 碰撞检测
+|   ├── ai_paddle.v        # 单人模式下的AI决策
 │   ├── vga_render.v       # VGA 图像生成（根据坐标输出 RGB）
 │   ├── keypad_scanner.v   # 5×4 矩阵键盘扫描
 │   ├── ps2_keyboard.v     # PS/2 键盘接收（修改自潘学长代码）

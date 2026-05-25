@@ -34,6 +34,7 @@ vivado_project/*.srcs/
 # Simulation waveform data files
 *.wdb
 *.wcfg
+!sim/wave_configs/*.wcfg
 *.pb
 *.zip
 

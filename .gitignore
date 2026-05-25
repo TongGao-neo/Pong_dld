@@ -1,0 +1,42 @@
+# Vivado project generated files
+vivado_project/*.runs/
+vivado_project/*.cache/
+vivado_project/*.hw/
+vivado_project/*.ip_user_files/
+vivado_project/*.sim/
+vivado_project/*.sdk/
+vivado_project/*.strategy/
+vivado_project/.Xil/
+vivado_project/project_1.runs/
+vivado_project/project_1.cache/
+vivado_project/project_1.hw/
+vivado_project/project_1.ip_user_files/
+vivado_project/project_1.sim/
+vivado_project/project_1.sdk/
+
+# Vivado log files
+*.log
+*.jou
+
+# Vivado generated files
+*.bit
+*.dcp
+*.pb
+*.xpr
+*.tcl
+*.backup.jou
+*.backup.log
+vivado_project/*.xpr
+vivado_project/*.data/
+vivado_project/*.gen/
+vivado_project/*.srcs/
+
+# Simulation waveform data files
+*.wdb
+*.wcfg
+*.pb
+*.zip
+
+# OS generated files
+.DS_Store
+Thumbs.db

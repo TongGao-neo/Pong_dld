@@ -3,6 +3,8 @@
 // Tracks the ball's Y coordinate with a dead zone and limited speed
 // ============================================================================
 
+`include "defines.vh"
+
 module ai_paddle (
     input  wire        clk,
     input  wire        rst_n,

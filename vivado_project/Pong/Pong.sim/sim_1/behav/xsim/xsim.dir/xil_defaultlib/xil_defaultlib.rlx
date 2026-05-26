@@ -3,10 +3,12 @@
 Nov 18 2020
 09:47:47
 C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_ai_paddle.v,1779682528,verilog,,,C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,tb_ai_paddle,,,../../../../../../source_code,,,,,
+C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_buzzer_ctrl.v,1779766609,verilog,,,,tb_buzzer_ctrl,,,../../../../../../source_code;../../../../Pong.gen/sources_1/ip/clk_wiz_0,,,,,
 C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_game_logic.v,1779677033,verilog,,,C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,tb_game_logic,,,../../../../../../source_code,,,,,
 C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_seg_display.v,1779677055,verilog,,,,tb_seg_display,,,../../../../../../source_code,,,,,
 C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_vga_render.v,1779763838,verilog,,,C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,tb_vga_render,,,../../../../../../source_code;../../../../Pong.gen/sources_1/ip/clk_wiz_0,,,,,
 C:/Users/Littlebanbrick/Desktop/Pong/source_code/ai_paddle.v,1779691489,verilog,,C:/Users/Littlebanbrick/Desktop/Pong/source_code/game_logic.v,C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,ai_paddle,,,../../../../../../source_code,,,,,
+C:/Users/Littlebanbrick/Desktop/Pong/source_code/buzzer_ctrl.v,1779766862,verilog,,C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_buzzer_ctrl.v,C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,buzzer_ctrl,,,../../../../../../source_code;../../../../Pong.gen/sources_1/ip/clk_wiz_0,,,,,
 C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,1779694184,verilog,,,,,,,,,,,,
 C:/Users/Littlebanbrick/Desktop/Pong/source_code/game_logic.v,1779693623,verilog,,C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_game_logic.v,C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,game_logic,,,../../../../../../source_code,,,,,
 C:/Users/Littlebanbrick/Desktop/Pong/source_code/seg_display.v,1779691529,verilog,,C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_seg_display.v,C:/Users/Littlebanbrick/Desktop/Pong/source_code/defines.vh,seg_display,,,../../../../../../source_code,,,,,

@@ -37,12 +37,11 @@ Pong_Project/
 │   └── Final_Report.pdf
 ├── source_code/
 │   ├── defines.vh              # Global macro definitions
-│   ├── pong_top.v              # Top-level module
+│   ├── Top.v              # Top-level module
 │   ├── clk_wiz.v               # Clocking Wizard wrapper (25.175 MHz)
 │   ├── game_logic.v            # State machine, ball physics, paddle control, AI integration
 │   ├── ai_paddle.v             # AI opponent logic
 │   ├── vga_render.v            # VGA image generator (pixel color from coordinates)
-│   ├── font_rom.v              # Digit bitmap ROM for score display
 │   ├── keypad_scanner.v        # 5×4 matrix keyboard scanner
 │   ├── ps2_keyboard.v          # PS/2 keyboard receiver (modified from Pan's code)
 │   ├── input_merger.v          # Merges matrix and PS/2 inputs
@@ -122,12 +121,11 @@ Pong_Project/
 │   └── Final_Report.pdf
 ├── source_code/
 │   ├── defines.vh              # 全局宏定义
-│   ├── pong_top.v              # 顶层模块
+│   ├── Top.v              # 顶层模块
 │   ├── clk_wiz.v               # 时钟向导封装（25.175MHz）
 │   ├── game_logic.v            # 状态机、球物理、球拍控制、AI 集成
 │   ├── ai_paddle.v             # AI 对手逻辑
 │   ├── vga_render.v            # VGA 图像生成（根据坐标输出像素颜色）
-│   ├── font_rom.v              # 数字字模 ROM
 │   ├── keypad_scanner.v        # 5×4 矩阵键盘扫描
 │   ├── ps2_keyboard.v          # PS/2 键盘接收（改编自潘学长代码）
 │   ├── input_merger.v          # 矩阵键盘与 PS/2 输入合并

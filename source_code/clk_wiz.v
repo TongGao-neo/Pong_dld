@@ -4,6 +4,7 @@
 
 module clk_wiz (
     input  wire  clk_in1,     // 100 MHz
+    input  wire  reset,       // MMCM reset (from SW[0])
     output wire  clk_out1,    // 25.175 MHz
     output wire  locked       // PLL locked
 );

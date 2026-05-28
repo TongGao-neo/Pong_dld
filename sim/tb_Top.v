@@ -62,9 +62,6 @@ module tb_Top;
     // Buzzer
     wire        buzzer;
 
-    // Simulated 25.175 MHz VGA clock (bypasses PLL when forced)
-    reg clk_25m_tb;
-
     // ========================================================================
     // PS/2 idle termination (no keyboard connected)
     // ========================================================================
@@ -110,10 +107,6 @@ module tb_Top;
     // ========================================================================
     initial clk = 1'b0;
     always #5 clk = ~clk;   // 10 ns period
-
-    // Simulated 25.175 MHz clock generation (~39.72 ns period)
-    initial clk_25m_tb = 1'b0;
-    always #19.86 clk_25m_tb = ~clk_25m_tb;
 
     // ========================================================================
     // Keypad Stimulus Task
@@ -186,11 +179,16 @@ module tb_Top;
         key_col_drv = 4'b1111;
         sw_reg      = 16'd0;      // two-player mode, all switches off
 
-        // Bypass PLL: force 25.175 MHz clock and lock signal into the design.
-        // The clk_wiz_0 IP behavioral model may not produce a toggling clock
-        // in some simulation environments, leaving all sequential logic dead.
-        force uut.clk_25m = clk_25m_tb;
-        force uut.pll_locked = 1'b1;   
+        // Force clrn=0 and vgac counters to 0 at sim start.
+        // The MMCM IP behavioral model may not initialize vgac's purely
+        // synchronous flops.  This override handles the initial X window.
+        force uut.rst_n = 1'b0;
+        force uut.u_vgac.h_count = 10'd0;
+        force uut.u_vgac.v_count = 10'd0;
+        #200;
+        release uut.u_vgac.h_count;
+        release uut.u_vgac.v_count;
+        // rst_n kept forced until PLL lock (released after Phase 0)
 
         $display("");
         $display("============================================================");
@@ -204,6 +202,9 @@ module tb_Top;
         rst_sw = 1'b0;              // release reset
         $display("  Reset released, waiting for MMCM lock...");
         wait_ms(1);                 // allow PLL behavioral model to lock
+
+        // Release rst_n force ~~ synchronizer now tracks clk_25m
+        release uut.rst_n;
 
         // ================================================================
         // Test 1: IDLE State

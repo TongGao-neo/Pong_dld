@@ -1,18 +1,5 @@
 # Vivado project generated files
-vivado_project/*.runs/
-vivado_project/*.cache/
-vivado_project/*.hw/
-vivado_project/*.ip_user_files/
-vivado_project/*.sim/
-vivado_project/*.sdk/
-vivado_project/*.strategy/
-vivado_project/.Xil/
-vivado_project/project_1.runs/
-vivado_project/project_1.cache/
-vivado_project/project_1.hw/
-vivado_project/project_1.ip_user_files/
-vivado_project/project_1.sim/
-vivado_project/project_1.sdk/
+vivado_project/*.*
 
 # Vivado log files
 *.log

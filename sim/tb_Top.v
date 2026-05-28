@@ -10,16 +10,14 @@
 //        localparam SCAN_DELAY = 10;
 //   3. Uncomment simulation BLINK_MAX in led_status.v:
 //        localparam BLINK_MAX = 24'd10;
-//   4. Add clk_wiz_0_sim.v to sim sources BEFORE clk_wiz_0 IP
-//      (replaces Xilinx MMCM with pure behavioral divider)
-//   5. Add this file to simulation sources
-//   6. Set tb_Top as top-level simulation module
-//   7. Run Behavioral Simulation
+//   4. Add this file to simulation sources
+//   5. Set as top-level simulation module
+//   6. Run Behavioral Simulation
 //
 // NOTES:
-//   - clk_wiz_0_sim.v generates 25 MHz from 100 MHz, no force/release needed
-//   - PS/2 ports pulled high (idle) -- no PS/2 stimulus is applied
-//   - Tests use hierarchical references (uut.signal)
+//   - Requires Vivado xsim with compiled clk_wiz_0 simulation library
+//   - PS/2 ports are pulled high (idle) -- no PS/2 stimulus is applied
+//   - Tests use hierarchical references (uut.signal); ensure debug visibility
 // ============================================================================
 
 `timescale 1ns / 1ps
@@ -63,6 +61,9 @@ module tb_Top;
 
     // Buzzer
     wire        buzzer;
+
+    // Simulated 25.175 MHz VGA clock (bypasses PLL when forced)
+    reg clk_25m_tb;
 
     // ========================================================================
     // PS/2 idle termination (no keyboard connected)
@@ -109,6 +110,10 @@ module tb_Top;
     // ========================================================================
     initial clk = 1'b0;
     always #5 clk = ~clk;   // 10 ns period
+
+    // Simulated 25.175 MHz clock generation (~39.72 ns period)
+    initial clk_25m_tb = 1'b0;
+    always #19.86 clk_25m_tb = ~clk_25m_tb;
 
     // ========================================================================
     // Keypad Stimulus Task
@@ -181,8 +186,11 @@ module tb_Top;
         key_col_drv = 4'b1111;
         sw_reg      = 16'd0;      // two-player mode, all switches off
 
-        // clk_wiz_0 IP replaced by clk_wiz_0_sim.v in simulation sources
-        // — clean 25 MHz clock and immediate LOCK from t=0.
+        // Bypass PLL: force 25.175 MHz clock and lock signal into the design.
+        // The clk_wiz_0 IP behavioral model may not produce a toggling clock
+        // in some simulation environments, leaving all sequential logic dead.
+        force uut.clk_25m = clk_25m_tb;
+        force uut.pll_locked = 1'b1;   
 
         $display("");
         $display("============================================================");

@@ -96,20 +96,20 @@ module keypad_scanner (
     end
 
     // For each of the 5 keys we need a debounce counter
-    reg [2:0] db_cnt_left_up,    db_cnt_left_down;
-    reg [2:0] db_cnt_right_up,   db_cnt_right_down;
-    reg [2:0] db_cnt_start;
+    reg [3:0] db_cnt_left_up,    db_cnt_left_down;
+    reg [3:0] db_cnt_right_up,   db_cnt_right_down;
+    reg [3:0] db_cnt_start;
 
     // Current key states (after debounce)
     reg kp_left_up, kp_left_down, kp_right_up, kp_right_down, kp_start;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            db_cnt_left_up   <= 3'd0;
-            db_cnt_left_down <= 3'd0;
-            db_cnt_right_up  <= 3'd0;
-            db_cnt_right_down<= 3'd0;
-            db_cnt_start     <= 3'd0;
+            db_cnt_left_up   <= 4'd0;
+            db_cnt_left_down <= 4'd0;
+            db_cnt_right_up  <= 4'd0;
+            db_cnt_right_down<= 4'd0;
+            db_cnt_start     <= 4'd0;
             kp_left_up       <= 1'b0;
             kp_left_down     <= 1'b0;
             kp_right_up      <= 1'b0;

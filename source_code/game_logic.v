@@ -13,8 +13,9 @@ module game_logic (
     input  wire        right_up,
     input  wire        right_down,
     input  wire        start_pause,
-    // Mode selection
+    // Mode / difficulty selection
     input  wire        ai_enable,      // 0 = two-player, 1 = AI controls right paddle
+    input  wire [1:0]  difficulty,     // SW[3:2]: 00=Easy, 01=Hard, 10=Master, 11=Auto
     // Game state outputs
     output reg  [2:0]  game_state,
     output reg  [3:0]  score_left,
@@ -41,20 +42,23 @@ module game_logic (
     localparam S_OVER  = 3'd5;
 
     // ------------------------------------------------------------------------
-    // Game tick generation (60 Hz update rate)
+    // Game tick generation (variable rate based on difficulty)
     // ------------------------------------------------------------------------
     reg [18:0] tick_counter;
+    reg [18:0] tick_threshold;
     wire game_tick;
     
     always @(posedge clk or negedge rst_n) begin
-        if (!rst_n)
+        if (!rst_n) begin
+            tick_counter   <= 19'd0;
+            tick_threshold <= `TICK_THRESH_SPEED1;
+        end else if (tick_counter >= tick_threshold) begin
             tick_counter <= 19'd0;
-        else if (tick_counter == `TICK_MAX)
-            tick_counter <= 19'd0;
-        else
+        end else begin
             tick_counter <= tick_counter + 1;
+        end
     end
-    assign game_tick = (tick_counter == `TICK_MAX);
+    assign game_tick = (tick_counter >= tick_threshold);
 
     // ------------------------------------------------------------------------
     // AI paddle control
@@ -63,6 +67,7 @@ module game_logic (
     ai_paddle u_ai (
         .clk        (clk),
         .rst_n      (rst_n),
+        .game_tick  (game_tick),
         .ball_y     (ball_y),
         .paddle_y   (paddle_right_y),
         .move_up    (ai_right_up),
@@ -74,6 +79,26 @@ module game_logic (
     wire right_down_sel = ai_enable ? ai_right_down : right_down;
 
     // ------------------------------------------------------------------------
+    // Speed computation helper (used in S_SERVE to set tick_threshold)
+    // ------------------------------------------------------------------------
+    reg [2:0] ball_speed_idx;
+
+    always @* begin
+        case (difficulty)
+            2'b00: ball_speed_idx = 3'd1;  // Easy
+            2'b01: ball_speed_idx = 3'd2;  // Hard
+            2'b10: ball_speed_idx = 3'd3;  // Master
+            2'b11: begin                   // Auto: speed = 1 + round_count
+                if (score_left + score_right >= `AUTO_MAX_SPEED - 1)
+                    ball_speed_idx = `AUTO_MAX_SPEED;
+                else
+                    ball_speed_idx = score_left + score_right + 3'd1;
+            end
+            default: ball_speed_idx = 3'd1;
+        endcase
+    end
+
+    // ------------------------------------------------------------------------
     // Internal registers
     // ------------------------------------------------------------------------
     reg  [2:0]  next_state;
@@ -82,6 +107,7 @@ module game_logic (
     reg  [8:0]  next_paddle_left_y, next_paddle_right_y;
     reg  [9:0]  ball_dx, ball_dy;     // ball velocity (direction only, magnitude 1)
     reg  [19:0] score_timer;          // delay after scoring
+    reg  [19:0] serve_timer;          // delay before auto-serve
     reg         start_pause_d;       // delayed copy for edge detection
     reg  [15:0] rand_cnt;            // free-running counter for serve random
 
@@ -101,6 +127,7 @@ module game_logic (
             ball_dy         <= 10'd1;
             serve_side      <= 1'b0;
             score_timer     <= 20'd0;
+            serve_timer     <= 20'd0;
             start_pause_d   <= 1'b0;
             rand_cnt        <= 16'd0;
             hit_paddle      <= 1'b0;
@@ -131,6 +158,8 @@ module game_logic (
                         next_score_left  = 4'd0;
                         next_score_right = 4'd0;
                         serve_side      <= 1'b0;
+                        serve_timer     <= 20'd0;
+                        tick_counter    <= 19'd0;
                         next_state       = S_SERVE;
                     end else begin
                         next_state = S_IDLE;
@@ -139,20 +168,45 @@ module game_logic (
 
                 // ------- SERVE -------
                 S_SERVE: begin
-                    // Place ball at center, set direction toward serving side
-                    next_ball_x = 10'd320 - (`BALL_SIZE / 2);
-                    next_ball_y = 10'd240 - (`BALL_SIZE / 2);
-                    if (serve_side == 1'b0) begin
-                        ball_dx <= 10'd1;   // moving right
-                    end else begin
-                        ball_dx <= -10'd1;  // moving left
+                    // One-time setup on first entry
+                    if (serve_timer == 20'd0) begin
+                        // Place ball at center, set direction toward serving side
+                        next_ball_x = 10'd320 - (`BALL_SIZE / 2);
+                        next_ball_y = 10'd240 - (`BALL_SIZE / 2);
+                        if (serve_side == 1'b0) begin
+                            ball_dx <= 10'd1;   // moving right
+                        end else begin
+                            ball_dx <= -10'd1;  // moving left
+                        end
+                        ball_dy <= (rand_cnt[0]) ? 10'd1 : -10'd1;   // pseudo-random up/down
+
+                        // Update tick threshold for this round
+                        case (ball_speed_idx)
+                            3'd1: tick_threshold <= `TICK_THRESH_SPEED1;
+                            3'd2: tick_threshold <= `TICK_THRESH_SPEED2;
+                            3'd3: tick_threshold <= `TICK_THRESH_SPEED3;
+                            3'd4: tick_threshold <= `TICK_THRESH_SPEED4;
+                            3'd5: tick_threshold <= `TICK_THRESH_SPEED5;
+                            default: tick_threshold <= `TICK_THRESH_SPEED1;
+                        endcase
                     end
-                    ball_dy <= (rand_cnt[0]) ? 10'd1 : -10'd1;   // pseudo-random up/down
-                    
-                    if (start_pause && !start_pause_d)
+
+                    // Increment serve timer
+                    if (serve_timer < `SERVE_TIMEOUT)
+                        serve_timer <= serve_timer + 1;
+
+                    // Transition: manual start or auto-serve timeout
+                    if (start_pause && !start_pause_d) begin
+                        serve_timer  <= 20'd0;
+                        tick_counter <= 19'd0;
                         next_state = S_PLAY;
-                    else
+                    end else if (serve_timer >= `SERVE_TIMEOUT) begin
+                        serve_timer  <= 20'd0;
+                        tick_counter <= 19'd0;
+                        next_state = S_PLAY;
+                    end else begin
                         next_state = S_SERVE;
+                    end
                 end
 
                 // ------- PLAY -------
@@ -250,6 +304,7 @@ module game_logic (
                 S_SCORE: begin
                     if (score_timer == `SCORE_TIMEOUT) begin
                         score_timer <= 20'd0;
+                        serve_timer <= 20'd0;   // reset auto-serve timer
                         next_state = S_SERVE;
                     end else begin
                         score_timer <= score_timer + 1;

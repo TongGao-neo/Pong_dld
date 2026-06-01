@@ -12,12 +12,14 @@ module tb_ai_paddle;
     reg        rst_n;
     reg [9:0]  ball_y;
     reg [8:0]  paddle_y;
+    reg        game_tick;
     wire       move_up;
     wire       move_down;
 
     ai_paddle DUT (
         .clk       (clk),
         .rst_n     (rst_n),
+        .game_tick (game_tick),
         .ball_y    (ball_y),
         .paddle_y  (paddle_y),
         .move_up   (move_up),
@@ -26,6 +28,18 @@ module tb_ai_paddle;
 
     // 25 MHz clock
     always #20 clk = ~clk;
+
+    // Generate game_tick (pulse every 2 clock cycles for rapid sim)
+    reg tick_toggle;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            tick_toggle <= 0;
+            game_tick   <= 0;
+        end else begin
+            tick_toggle <= ~tick_toggle;
+            game_tick   <= tick_toggle;  // pulse every other cycle
+        end
+    end
 
     initial begin
         clk = 0; rst_n = 0;

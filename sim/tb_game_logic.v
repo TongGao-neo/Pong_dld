@@ -16,6 +16,8 @@ module tb_game_logic;
     reg        start_pause;
     reg        ai_enable;
 
+    reg  [1:0] difficulty;
+
     wire [2:0] game_state;
     wire [3:0] score_left, score_right;
     wire [9:0] ball_x, ball_y;
@@ -32,6 +34,7 @@ module tb_game_logic;
         .right_down     (right_down),
         .start_pause    (start_pause),
         .ai_enable      (ai_enable),
+        .difficulty     (difficulty),
         .game_state     (game_state),
         .score_left     (score_left),
         .score_right    (score_right),
@@ -41,7 +44,8 @@ module tb_game_logic;
         .paddle_right_y (paddle_right_y),
         .hit_paddle     (hit_paddle),
         .score_event    (score_event),
-        .game_over_event(game_over_event)
+        .game_over_event(game_over_event),
+        .serve_side     ()
     );
 
     // 25.175 MHz clock -> period ~39.7 ns
@@ -59,6 +63,7 @@ module tb_game_logic;
         right_down   = 0;
         start_pause  = 0;
         ai_enable    = 0;   // two-player mode for testing
+        difficulty   = 2'b00; // Easy mode
 
         // Reset
         #100 rst_n = 1;

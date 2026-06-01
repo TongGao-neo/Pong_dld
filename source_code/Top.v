@@ -142,6 +142,7 @@ game_logic u_game_logic (
     .start_pause    (start_pause),
     // Mode selection (e.g., SW[1]: 0=dual, 1=AI)
     .ai_enable      (SW[1]),
+    .difficulty     (SW[3:2]),
     // Game state outputs
     .game_state     (game_state),
     .score_left     (score_left),

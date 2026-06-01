@@ -39,6 +39,20 @@
 // AI opponent (used in ai_paddle.v)
 // ----------------------------------------------------------------------------
 `define AI_DEAD_ZONE    4           // stop moving when ball is within this many pixels of paddle center
+`define AI_UPDATE_BASE  8           // base update interval in game ticks
+`define AI_UPDATE_RANGE 8           // random additional range (0 ~ RANGE-1)
+
+// ----------------------------------------------------------------------------
+// Difficulty levels (SW[3:2])
+//   00 = Easy, 01 = Hard, 10 = Master, 11 = Auto
+// ----------------------------------------------------------------------------
+// Tick thresholds for each speed = TICK_MAX / speed
+`define TICK_THRESH_SPEED1  19'd419583  // speed 1 (Easy / Auto start)
+`define TICK_THRESH_SPEED2  19'd209791  // speed 2 (Hard)
+`define TICK_THRESH_SPEED3  19'd139861  // speed 3 (Master)
+`define TICK_THRESH_SPEED4  19'd104895  // speed 4 (Auto mid)
+`define TICK_THRESH_SPEED5  19'd83916   // speed 5 (Auto max)
+`define AUTO_MAX_SPEED      5           // max speed in Auto mode
 
 // ----------------------------------------------------------------------------
 // Game logic timing
@@ -52,6 +66,9 @@
 // Score pause duration (in game ticks) ~1 second
 `define SCORE_TIMEOUT   19'd60      // simulation: 10; actual: 60 (~1 second at 60 Hz)
 //`define SCORE_TIMEOUT 10
+// Auto-serve delay (in game ticks) ~1 second
+`define SERVE_TIMEOUT   19'd60      // simulation: 10; actual: 60 (~1 second at 60 Hz)
+//`define SERVE_TIMEOUT 10
 
 // ----------------------------------------------------------------------------
 // 7-segment display scanning (used in seg_display.v)
@@ -59,5 +76,10 @@
 // Scan frequency = 25.175 MHz / (SCAN_MAX+1) ~ 4 kHz (250 Hz per digit)
 `define SCAN_MAX        13'd6293    // simulation: 10; actual: 6293
 //`define SCAN_MAX 10
+
+// ----------------------------------------------------------------------------
+// VGA text scaling (used in vga_render.v)
+// ----------------------------------------------------------------------------
+`define TEXT_SCALE      2           // GAME OVER character scale (1=8x16, 2=16x32)
 
 `endif

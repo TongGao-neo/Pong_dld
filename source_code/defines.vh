@@ -38,7 +38,7 @@
 // ----------------------------------------------------------------------------
 // AI opponent (used in ai_paddle.v)
 // ----------------------------------------------------------------------------
-`define AI_DEAD_ZONE    40          // stop moving when ball is within this many pixels of paddle center
+`define AI_DEAD_ZONE    60          // stop moving when ball is within this many pixels of paddle center
 `define AI_UPDATE_BASE  24          // base update interval in game ticks
 `define AI_UPDATE_RANGE 16           // random additional range (0 ~ RANGE-1)
 

@@ -40,7 +40,7 @@
 // ----------------------------------------------------------------------------
 `define AI_DEAD_ZONE    4           // stop moving when ball is within this many pixels of paddle center
 `define AI_UPDATE_BASE  8           // base update interval in game ticks
-`define AI_UPDATE_RANGE 8           // random additional range (0 ~ RANGE-1)
+`define AI_UPDATE_RANGE 16           // random additional range (0 ~ RANGE-1)
 
 // ----------------------------------------------------------------------------
 // Difficulty levels (SW[3:2])
@@ -48,10 +48,10 @@
 // ----------------------------------------------------------------------------
 // Tick thresholds for each speed = TICK_MAX / speed
 `define TICK_THRESH_SPEED1  19'd419583  // speed 1 (Easy / Auto start)
-`define TICK_THRESH_SPEED2  19'd139861  // speed 2 (Hard)
+`define TICK_THRESH_SPEED2  19'd80000   // speed 2 (Hard)
 `define TICK_THRESH_SPEED3  19'd40000   // speed 3 (Master)
-`define TICK_THRESH_SPEED4  19'd104895  // speed 4 (Auto mid)
-`define TICK_THRESH_SPEED5  19'd40000   // speed 5 (Auto max)
+`define TICK_THRESH_SPEED4  19'd94895   // speed 4 (Auto mid)
+`define TICK_THRESH_SPEED5  19'd30000   // speed 5 (Auto max)
 `define AUTO_MAX_SPEED      10          // max speed in Auto mode
 
 // ----------------------------------------------------------------------------

@@ -63,12 +63,14 @@ module game_logic (
     // AI paddle control
     // ------------------------------------------------------------------------
     wire ai_right_up, ai_right_down;
+    wire ball_toward_ai = ~ball_dx[9];  // 1 = ball moving right (toward right-paddle AI)
     ai_paddle u_ai (
         .clk        (clk),
         .rst_n      (rst_n),
         .game_tick  (game_tick),
         .ball_y     (ball_y),
         .paddle_y   (paddle_right_y),
+        .ball_toward_ai (ball_toward_ai),
         .move_up    (ai_right_up),
         .move_down  (ai_right_down)
     );

@@ -22,6 +22,12 @@ module ai_paddle (
     wire [9:0] ball_center_y   = ball_y   + (`BALL_SIZE / 2);
     wire [9:0] paddle_center_y = paddle_y + (`PADDLE_H  / 2);
 
+    // Clamped comparison bounds for tracking, preventing unsigned underflow
+    // when paddle is near the screen edge and DEAD_ZONE is large.
+    wire [9:0] track_lower = (paddle_center_y > `AI_DEAD_ZONE)
+                           ? (paddle_center_y - `AI_DEAD_ZONE) : 10'd0;
+    wire [9:0] track_upper = paddle_center_y + `AI_DEAD_ZONE;   // can't overflow (max ~520 < 1024)
+
     // ------------------------------------------------------------------------
     // Randomized update delay
     // AI only samples ball position every (AI_UPDATE_BASE + rand) game ticks.
@@ -42,10 +48,10 @@ module ai_paddle (
             if (update_timer == 6'd0) begin
                 if (ball_toward_ai) begin
                     // Ball coming toward us: track it with dead zone
-                    if (ball_center_y < paddle_center_y - `AI_DEAD_ZONE) begin
+                    if (ball_center_y < track_lower) begin
                         move_up   <= 1'b1;
                         move_down <= 1'b0;
-                    end else if (ball_center_y > paddle_center_y + `AI_DEAD_ZONE) begin
+                    end else if (ball_center_y > track_upper) begin
                         move_up   <= 1'b0;
                         move_down <= 1'b1;
                     end else begin
@@ -55,11 +61,13 @@ module ai_paddle (
                 end else begin
                     // Ball moving away: drift back toward screen center
                     if (paddle_center_y > 10'd240 + `AI_DEAD_ZONE) begin
-                        move_up   <= 1'b0;
-                        move_down <= 1'b1;
-                    end else if (paddle_center_y < 10'd240 - `AI_DEAD_ZONE) begin
+                        // Paddle below center -> move UP to return
                         move_up   <= 1'b1;
                         move_down <= 1'b0;
+                    end else if (paddle_center_y < 10'd240 - `AI_DEAD_ZONE) begin
+                        // Paddle above center -> move DOWN to return
+                        move_up   <= 1'b0;
+                        move_down <= 1'b1;
                     end else begin
                         move_up   <= 1'b0;
                         move_down <= 1'b0;

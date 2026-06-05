@@ -52,7 +52,7 @@
 `define TICK_THRESH_SPEED3  19'd139861  // speed 3 (Master)            ~180 Hz
 `define TICK_THRESH_SPEED4  19'd104895  // speed 4 (Auto mid)          ~240 Hz
 `define TICK_THRESH_SPEED5  19'd83917   // speed 5 (Auto max)          ~300 Hz
-`define AUTO_MAX_SPEED      5           // max speed (5 levels)
+// AUTO_MAX_SPEED removed — Auto mode now uses per-hit 1.1x multiplier, no cap
 
 // ----------------------------------------------------------------------------
 // Game logic timing

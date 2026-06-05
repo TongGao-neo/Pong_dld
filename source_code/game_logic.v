@@ -100,12 +100,7 @@ module game_logic (
             2'b00: ball_speed_idx = 3'd1;  // Easy
             2'b01: ball_speed_idx = 3'd2;  // Hard
             2'b10: ball_speed_idx = 3'd3;  // Master
-            2'b11: begin                   // Auto: speed = 1 + round_count
-                if (score_left + score_right >= `AUTO_MAX_SPEED - 1)
-                    ball_speed_idx = 3'd5;  // cap at max speed
-                else
-                    ball_speed_idx = score_left + score_right + 3'd1;
-            end
+            2'b11: ball_speed_idx = 3'd0;  // Auto (speed controlled by auto_threshold)
             default: ball_speed_idx = 3'd1;
         endcase
     end
@@ -128,6 +123,7 @@ module game_logic (
     reg signed  [3:0]  angle_index;      // angle index (-4..+4) for lookup
     reg         [2:0]  vel_dx_mag;       // dx magnitude from lookup
     reg signed  [10:0] vel_dy;           // dy from lookup
+    reg  [18:0] auto_threshold;         // auto-mode speed, decreases per hit
 
     // ------------------------------------------------------------------------
     // Velocity lookup table: angle-index -> (dx_mag, dy)   with |V|≈5
@@ -168,6 +164,7 @@ module game_logic (
             start_pause_d   <= 1'b0;
             rand_cnt        <= 16'd0;
             tick_threshold  <= `TICK_THRESH_SPEED1;
+            auto_threshold  <= `TICK_THRESH_SPEED1;
             hit_paddle      <= 1'b0;
             score_event     <= 1'b0;
             game_over_event <= 1'b0;
@@ -196,6 +193,7 @@ module game_logic (
                         next_score_right = 4'd0;
                         serve_side      <= 1'b0;
                         serve_timer     <= 20'd0;
+                        auto_threshold  <= `TICK_THRESH_SPEED1;
                         next_state       = S_SERVE;
                     end else begin
                         next_state = S_IDLE;
@@ -226,14 +224,15 @@ module game_logic (
                         ball_dy <= vel_dy;
 
                         // Update tick threshold for this round
-                        case (ball_speed_idx)
-                            3'd1: tick_threshold <= `TICK_THRESH_SPEED1;
-                            3'd2: tick_threshold <= `TICK_THRESH_SPEED2;
-                            3'd3: tick_threshold <= `TICK_THRESH_SPEED3;
-                            3'd4: tick_threshold <= `TICK_THRESH_SPEED4;
-                            3'd5: tick_threshold <= `TICK_THRESH_SPEED5;
-                            default: tick_threshold <= `TICK_THRESH_SPEED1;
-                        endcase
+                        if (difficulty == 2'b11)
+                            tick_threshold <= auto_threshold;
+                        else
+                            case (ball_speed_idx)
+                                3'd1: tick_threshold <= `TICK_THRESH_SPEED1;
+                                3'd2: tick_threshold <= `TICK_THRESH_SPEED2;
+                                3'd3: tick_threshold <= `TICK_THRESH_SPEED3;
+                                default: tick_threshold <= `TICK_THRESH_SPEED1;
+                            endcase
                     end
 
                     if (serve_timer < `SERVE_TIMEOUT)
@@ -314,6 +313,10 @@ module game_logic (
 
                             ball_dx <=  $signed({1'b0, vel_dx_mag});  // bounce right
                             ball_dy <=  vel_dy;
+
+                            // Auto mode: speed ×1.1 per paddle hit
+                            if (difficulty == 2'b11)
+                                auto_threshold <= ({4'd0, auto_threshold} * 5'd10) / 5'd11;
                         end
 
                         // --- Right paddle collision ---
@@ -345,6 +348,10 @@ module game_logic (
 
                             ball_dx <= -$signed({1'b0, vel_dx_mag});  // bounce left
                             ball_dy <=  vel_dy;
+
+                            // Auto mode: speed ×1.1 per paddle hit
+                            if (difficulty == 2'b11)
+                                auto_threshold <= ({4'd0, auto_threshold} * 5'd10) / 5'd11;
                         end
 
                         // --- Score detection ---

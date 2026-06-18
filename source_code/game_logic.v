@@ -106,17 +106,16 @@ module game_logic (
     end
 
     // ------------------------------------------------------------------------
-    // Paddle speed selection (constant effective speed across difficulties)
-    // Easy(60Hz)=6, Hard(120Hz)=3, Master(180Hz)=2, Auto(start)=6
-    // All give 360 px/s effective paddle speed.
+    // Paddle speed selection (scales with difficulty)
+    // Easy(60Hz)=6→360, Hard(120Hz)=4→480, Master(180Hz)=3→540, Auto(start)=6→360
     // ------------------------------------------------------------------------
     reg [2:0] paddle_speed;
 
     always @* begin
         case (difficulty)
             2'b00: paddle_speed = 3'd6;  // Easy:   60 Hz × 6 = 360 px/s
-            2'b01: paddle_speed = 3'd3;  // Hard:  120 Hz × 3 = 360 px/s
-            2'b10: paddle_speed = 3'd2;  // Master: 180 Hz × 2 = 360 px/s
+            2'b01: paddle_speed = 3'd4;  // Hard:  120 Hz × 4 = 480 px/s
+            2'b10: paddle_speed = 3'd3;  // Master: 180 Hz × 3 = 540 px/s
             2'b11: paddle_speed = 3'd6;  // Auto:   starts at 60 Hz × 6
             default: paddle_speed = 3'd6;
         endcase

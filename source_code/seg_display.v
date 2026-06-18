@@ -109,20 +109,20 @@ module seg_display (
         end else if (scan_tick) begin
             digit_sel <= digit_sel + 1;
             case (digit_sel)
-                2'd0: begin  // Rightmost digit
-                    AN <= 4'b0111;
+                2'd0: begin  // Leftmost digit (AN[3]=0)
+                    AN <= 4'b1110;
                     SEGMENT <= char_at(difficulty, 2'd0);
                 end
                 2'd1: begin
-                    AN <= 4'b1011;
+                    AN <= 4'b1101;
                     SEGMENT <= char_at(difficulty, 2'd1);
                 end
                 2'd2: begin
-                    AN <= 4'b1101;
+                    AN <= 4'b1011;
                     SEGMENT <= char_at(difficulty, 2'd2);
                 end
-                2'd3: begin  // Leftmost digit
-                    AN <= 4'b1110;
+                2'd3: begin  // Rightmost digit (AN[0]=0)
+                    AN <= 4'b0111;
                     SEGMENT <= char_at(difficulty, 2'd3);
                 end
             endcase

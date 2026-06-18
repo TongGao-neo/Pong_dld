@@ -1,6 +1,6 @@
 // ============================================================================
 // seg_display.v - 4-digit 7-segment display driver (common anode)
-// Displays difficulty: EASy, HArd, |St, AUtO
+// Displays difficulty: EASy, HArd, mSt (half-n halves), AUtO
 // ============================================================================
 
 `include "defines.vh"
@@ -30,7 +30,8 @@ module seg_display (
     localparam SEG_t   = 8'b10000111;  // d,e,f,g
     localparam SEG_U   = 8'b11000001;  // b,c,d,e,f
     localparam SEG_O   = 8'b11000000;  // a,b,c,d,e,f
-    localparam SEG_BAR = 8'b11001111;  // f,e (left verticals)
+    localparam SEG_nL  = 8'b10101111;  // e,g (left half of n)
+    localparam SEG_nR  = 8'b10111001;  // b,c,g (right half of n)
 
     // ------------------------------------------------------------------------
     // Character lookup
@@ -57,12 +58,12 @@ module seg_display (
                     default: char_at = SEG_OFF;
                 endcase
             end
-            2'b10: begin  // |St  (mSt)
+            2'b10: begin  // mSt (left half-n + right half-n)
                 case (pos)
-                    2'd0: char_at = SEG_OFF;
-                    2'd1: char_at = SEG_t;
-                    2'd2: char_at = SEG_S;
-                    2'd3: char_at = SEG_BAR;
+                    2'd0: char_at = SEG_t;
+                    2'd1: char_at = SEG_S;
+                    2'd2: char_at = SEG_nR;
+                    2'd3: char_at = SEG_nL;
                     default: char_at = SEG_OFF;
                 endcase
             end

@@ -271,14 +271,14 @@ module game_logic (
                         next_state = S_PAUSE;
                     end else begin
                         // --- Paddle movement (constant effective speed across difficulties) ---
-                        if (left_up && (paddle_left_y > `PADDLE_MIN_Y))
+                        if (left_up && (paddle_left_y >= paddle_speed))
                             next_paddle_left_y = paddle_left_y - paddle_speed;
                         else if (left_down && (paddle_left_y < `PADDLE_MAX_Y))
                             next_paddle_left_y = paddle_left_y + paddle_speed;
                         else
                             next_paddle_left_y = paddle_left_y;
                         
-                        if (right_up_sel && (paddle_right_y > `PADDLE_MIN_Y))
+                        if (right_up_sel && (paddle_right_y >= paddle_speed))
                             next_paddle_right_y = paddle_right_y - paddle_speed;
                         else if (right_down_sel && (paddle_right_y < `PADDLE_MAX_Y))
                             next_paddle_right_y = paddle_right_y + paddle_speed;

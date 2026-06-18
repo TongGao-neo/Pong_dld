@@ -13,3 +13,5 @@ vivado_project/
 Thumbs.db
 
 xdc_example/
+
+.deepseek/

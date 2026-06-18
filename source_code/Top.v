@@ -123,6 +123,22 @@ input_merger u_input_merger (
 );
 
 // ============================================================================
+// Powerup controller (wide-paddle powerups)
+// ============================================================================
+powerup_ctrl u_powerup (
+    .clk            (clk_25m),
+    .rst_n          (rst_n),
+    .game_tick      (game_tick)
+    .paddle_left_y  (paddle_left_y),
+    .paddle_right_y (paddle_right_y),
+    .powerup_active (pw_active),
+    .powerup_x      (pw_x),
+    .powerup_y      (pw_y),
+    .hit_left       (pw_hit_left),
+    .hit_right      (pw_hit_right)
+);
+
+// ============================================================================
 // Game logic (state machine, ball physics, paddle control, AI)
 // ============================================================================
 // Game state outputs (to be used by VGA, LED, buzzer)
@@ -133,6 +149,10 @@ wire [9:0]  paddle_left_y, paddle_right_y;
 // Event pulses for sound
 wire        hit_paddle, score_event, game_over_event;
 wire        serve_side;
+wire        game_tick, wide_left, wide_right;
+wire        pw_hit_left, pw_hit_right;
+wire        pw_active;
+wire [9:0]  pw_x, pw_y;
 
 game_logic u_game_logic (
     .clk            (clk_25m),
@@ -144,6 +164,8 @@ game_logic u_game_logic (
     .right_down     (right_down),
     .start_pause    (start_pause),
     .soft_reset     (soft_reset),
+    .pw_hit_left    (pw_hit_left),
+    .pw_hit_right   (pw_hit_right),
     // Mode selection (e.g., SW[1]: 0=dual, 1=AI)
     .ai_enable      (SW[1]),
     .difficulty     (SW[3:2]),
@@ -159,7 +181,10 @@ game_logic u_game_logic (
     .hit_paddle     (hit_paddle),
     .score_event    (score_event),
     .game_over_event(game_over_event),
-    .serve_side     (serve_side)
+    .serve_side     (serve_side),
+    .game_tick      (game_tick),
+    .wide_left      (wide_left),
+    .wide_right     (wide_right)
 );
 
 // ============================================================================
@@ -198,6 +223,12 @@ vga_render u_vga_render (
     .score_left     (score_left),
     .score_right    (score_right),
     .game_state     (game_state),
+    .game_tick      (game_tick),
+    .wide_left      (wide_left),
+    .wide_right     (wide_right),
+    .powerup_active (pw_active),
+    .powerup_x      (pw_x),
+    .powerup_y      (pw_y),
     .rgb_out        (vga_rgb)
 );
 

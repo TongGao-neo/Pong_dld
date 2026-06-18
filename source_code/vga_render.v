@@ -1,6 +1,6 @@
 // ============================================================================
 // vga_render.v - VGA image generator with integrated font ROM
-//                Supports score digits and "GAME OVER" message
+//                Supports score digits, GAME OVER, ball trail, wide paddle
 // ============================================================================
 
 `include "defines.vh"
@@ -18,6 +18,15 @@ module vga_render (
     input  wire [3:0]  score_left,
     input  wire [3:0]  score_right,
     input  wire [2:0]  game_state,   // state encoding (S_OVER = 5)
+    // Ball trail
+    input  wire        game_tick,
+    // Powerup display
+    input  wire        powerup_active,
+    input  wire [9:0]  powerup_x,
+    input  wire [9:0]  powerup_y,
+    // Wide paddle flags
+    input  wire        wide_left,
+    input  wire        wide_right,
     output reg  [11:0] rgb_out       // {b[3:0], g[3:0], r[3:0]}
 );
 
@@ -32,6 +41,7 @@ module vga_render (
     localparam COLOR_BLACK   = 12'h000;
     localparam COLOR_WHITE   = 12'hFFF;
     localparam COLOR_GRAY    = 12'h888;
+    localparam COLOR_GREEN   = 12'h0F0;
 
     // ------------------------------------------------------------------------
     // Coordinate shorthand
@@ -40,14 +50,34 @@ module vga_render (
     wire [9:0] col = col_addr;
 
     // ========================================================================
-    // 1. Score digit display (unchanged from previous version)
+    // Ball trail history (3-frame ghost)
+    // ========================================================================
+    reg [9:0] bx1, by1;      // t-1
+    reg [9:0] bx2, by2;      // t-2
+    reg [9:0] bx3, by3;      // t-3
+
+    always @(posedge clk) begin
+        if (game_tick) begin
+            bx1 <= ball_x;  by1 <= ball_y;
+            bx2 <= bx1;     by2 <= by1;
+            bx3 <= bx2;     by3 <= by2;
+        end
+    end
+
+    // ========================================================================
+    // Wide paddle geometry
+    // ========================================================================
+    wire [9:0] lp_right = `LEFT_PADDLE_X  + `PADDLE_W + (wide_left  ? 10'd10 : 10'd0);
+    wire [9:0] rp_left  = `RIGHT_PADDLE_X -            (wide_right ? 10'd10 : 10'd0);
+
+    // ========================================================================
+    // 1. Score digit display
     // ========================================================================
     reg [7:0] digit_bitmap [0:15];
     reg [3:0] selected_digit;
     reg [9:0] digit_x_base, digit_y_base;
 
     always @* begin
-        // Default: left tens digit
         if (col >= 200 && col < 216 && row >= 30 && row < 46) begin
             selected_digit = score_left / 10;
             digit_x_base = 200;
@@ -71,7 +101,7 @@ module vga_render (
         end
     end
 
-    // Digit bitmap ROM (0-9) – same as before
+    // Digit bitmap ROM (0-9)
     always @* begin
         case (selected_digit)
             4'd0: begin
@@ -102,7 +132,7 @@ module vga_render (
                 digit_bitmap[8]  = 8'b11000000; digit_bitmap[9]  = 8'b11000000;
                 digit_bitmap[10] = 8'b11000000; digit_bitmap[11] = 8'b11000000;
                 digit_bitmap[12] = 8'b11000000; digit_bitmap[13] = 8'b11000000;
-                digit_bitmap[14] = 8'b11000000; digit_bitmap[15] = 8'b11111110;
+                digit_bitmap[14] = 8'b11000110; digit_bitmap[15] = 8'b01111110;
             end
             4'd3: begin
                 digit_bitmap[0]  = 8'b01111100; digit_bitmap[1]  = 8'b11000110;
@@ -111,27 +141,27 @@ module vga_render (
                 digit_bitmap[6]  = 8'b00000110; digit_bitmap[7]  = 8'b00000110;
                 digit_bitmap[8]  = 8'b00000110; digit_bitmap[9]  = 8'b00000110;
                 digit_bitmap[10] = 8'b00000110; digit_bitmap[11] = 8'b00000110;
-                digit_bitmap[12] = 8'b00000110; digit_bitmap[13] = 8'b11000110;
+                digit_bitmap[12] = 8'b00000110; digit_bitmap[13] = 8'b00000110;
                 digit_bitmap[14] = 8'b11000110; digit_bitmap[15] = 8'b01111100;
             end
             4'd4: begin
-                digit_bitmap[0]  = 8'b00001100; digit_bitmap[1]  = 8'b00011100;
-                digit_bitmap[2]  = 8'b00111100; digit_bitmap[3]  = 8'b01101100;
-                digit_bitmap[4]  = 8'b11001100; digit_bitmap[5]  = 8'b11001100;
-                digit_bitmap[6]  = 8'b11001100; digit_bitmap[7]  = 8'b11111110;
-                digit_bitmap[8]  = 8'b00001100; digit_bitmap[9]  = 8'b00001100;
-                digit_bitmap[10] = 8'b00001100; digit_bitmap[11] = 8'b00001100;
-                digit_bitmap[12] = 8'b00001100; digit_bitmap[13] = 8'b00001100;
-                digit_bitmap[14] = 8'b00001100; digit_bitmap[15] = 8'b00011110;
+                digit_bitmap[0]  = 8'b00100110; digit_bitmap[1]  = 8'b01100110;
+                digit_bitmap[2]  = 8'b11000110; digit_bitmap[3]  = 8'b11000110;
+                digit_bitmap[4]  = 8'b11000110; digit_bitmap[5]  = 8'b11000110;
+                digit_bitmap[6]  = 8'b11000110; digit_bitmap[7]  = 8'b11111110;
+                digit_bitmap[8]  = 8'b00000110; digit_bitmap[9]  = 8'b00000110;
+                digit_bitmap[10] = 8'b00000110; digit_bitmap[11] = 8'b00000110;
+                digit_bitmap[12] = 8'b00000110; digit_bitmap[13] = 8'b00000110;
+                digit_bitmap[14] = 8'b00000110; digit_bitmap[15] = 8'b00000110;
             end
             4'd5: begin
-                digit_bitmap[0]  = 8'b11111110; digit_bitmap[1]  = 8'b11000000;
+                digit_bitmap[0]  = 8'b01111110; digit_bitmap[1]  = 8'b11000000;
                 digit_bitmap[2]  = 8'b11000000; digit_bitmap[3]  = 8'b11000000;
                 digit_bitmap[4]  = 8'b11000000; digit_bitmap[5]  = 8'b11111100;
                 digit_bitmap[6]  = 8'b00000110; digit_bitmap[7]  = 8'b00000110;
                 digit_bitmap[8]  = 8'b00000110; digit_bitmap[9]  = 8'b00000110;
                 digit_bitmap[10] = 8'b00000110; digit_bitmap[11] = 8'b00000110;
-                digit_bitmap[12] = 8'b00000110; digit_bitmap[13] = 8'b11000110;
+                digit_bitmap[12] = 8'b00000110; digit_bitmap[13] = 8'b00000110;
                 digit_bitmap[14] = 8'b11000110; digit_bitmap[15] = 8'b01111100;
             end
             4'd6: begin
@@ -195,21 +225,16 @@ module vga_render (
                             digit_bitmap[row_in_digit][7 - col_in_digit];
 
     // ========================================================================
-    // 2. "GAME OVER" message display
+    // 2. "GAME OVER" message display (unchanged)
     // ========================================================================
-    // Letters needed: G, A, M, E, (space), O, V, E, R
-    // We store them in a small ROM, each letter 8 pixels wide, 16 rows tall.
-    // Letter index: 0=G, 1=A, 2=M, 3=E, 4=space, 5=O, 6=V, 7=E, 8=R
-    // TEXT_SCALE controls pixel doubling (1=8x16 per char, 2=16x32, etc.)
     wire [3:0] letter_index;
     wire [3:0] row_in_char;
     wire [2:0] col_in_char;
-    reg [7:0] letter_row;   // 8-bit row data for the selected letter
+    reg [7:0] letter_row;
 
-    // Position of "GAME OVER" on screen (centered, scaled by TEXT_SCALE)
-    localparam CHAR_W      = 8  * `TEXT_SCALE;   // scaled char width
-    localparam CHAR_H      = 16 * `TEXT_SCALE;   // scaled char height
-    localparam GAMEOVER_W  = 9 * CHAR_W;         // 9 chars total width
+    localparam CHAR_W      = 8  * `TEXT_SCALE;
+    localparam CHAR_H      = 16 * `TEXT_SCALE;
+    localparam GAMEOVER_W  = 9 * CHAR_W;
     localparam GAMEOVER_H  = CHAR_H;
     localparam GAMEOVER_X  = (`SCREEN_W  - GAMEOVER_W) / 2;
     localparam GAMEOVER_Y  = (`SCREEN_H  - GAMEOVER_H) / 2;
@@ -219,15 +244,13 @@ module vga_render (
                              (col >= GAMEOVER_X) && (col < GAMEOVER_X + GAMEOVER_W) &&
                              (row >= GAMEOVER_Y) && (row < GAMEOVER_Y + GAMEOVER_H);
 
-    // Determine which letter we are in (0 .. 8), with pixel scaling
     wire [9:0] local_x = col - GAMEOVER_X;
     wire [9:0] local_y = row - GAMEOVER_Y;
 
-    assign letter_index = local_x / CHAR_W;               // which char
-    assign row_in_char  = local_y / `TEXT_SCALE;          // which row in bitmap
-    assign col_in_char  = (local_x % CHAR_W) / `TEXT_SCALE; // which col in bitmap
+    assign letter_index = local_x / CHAR_W;
+    assign row_in_char  = local_y / `TEXT_SCALE;
+    assign col_in_char  = (local_x % CHAR_W) / `TEXT_SCALE;
 
-    // Letter bitmap ROM
     always @* begin
         case (letter_index)
             0: // G
@@ -270,11 +293,11 @@ module vga_render (
                 endcase
             2: // M
                 case (row_in_char)
-                    4'd0: letter_row = 8'b10000010;
-                    4'd1: letter_row = 8'b11000110;
-                    4'd2: letter_row = 8'b11101110;
-                    4'd3: letter_row = 8'b11111110;
-                    4'd4: letter_row = 8'b11010110;
+                    4'd0: letter_row = 8'b11000110;
+                    4'd1: letter_row = 8'b11101110;
+                    4'd2: letter_row = 8'b11111110;
+                    4'd3: letter_row = 8'b11010110;
+                    4'd4: letter_row = 8'b11000110;
                     4'd5: letter_row = 8'b11000110;
                     4'd6: letter_row = 8'b11000110;
                     4'd7: letter_row = 8'b11000110;
@@ -306,8 +329,10 @@ module vga_render (
                     4'd14: letter_row = 8'b11000000;
                     4'd15: letter_row = 8'b11111110;
                 endcase
-            4: // space
-                letter_row = 8'b00000000;
+            4: // (space)
+                case (row_in_char)
+                    default: letter_row = 8'b00000000;
+                endcase
             5: // O
                 case (row_in_char)
                     4'd0: letter_row = 8'b01111100;
@@ -341,12 +366,12 @@ module vga_render (
                     4'd9: letter_row = 8'b11000110;
                     4'd10: letter_row = 8'b11000110;
                     4'd11: letter_row = 8'b11000110;
-                    4'd12: letter_row = 8'b01101100;
-                    4'd13: letter_row = 8'b00111000;
-                    4'd14: letter_row = 8'b00010000;
-                    4'd15: letter_row = 8'b00000000;
+                    4'd12: letter_row = 8'b11000110;
+                    4'd13: letter_row = 8'b01101100;
+                    4'd14: letter_row = 8'b00111000;
+                    4'd15: letter_row = 8'b00010000;
                 endcase
-            7: // E (same as index 3)
+            7: // E
                 case (row_in_char)
                     4'd0: letter_row = 8'b11111110;
                     4'd1: letter_row = 8'b11000000;
@@ -390,45 +415,72 @@ module vga_render (
 
     wire gameover_pixel_on;
     assign gameover_pixel_on = inside_gameover &&
-                               letter_row[7 - col_in_char];  // MSB = leftmost pixel
+                               letter_row[7 - col_in_char];
 
     // ========================================================================
-    // 3. Final pixel output (priority: GAME OVER > ball/paddles/score/line)
+    // 3. Final pixel output
     // ========================================================================
     always @* begin
         if (!rdn) begin
-            // Default background
             rgb_out = COLOR_BLACK;
 
-            // Center dashed line (only if not game over, or behind text? we keep it)
+            // --- Center dashed line ---
             if (col >= 318 && col <= 320 && (row[3:0] < 8))
                 rgb_out = COLOR_WHITE;
 
-            // Ball
+            // --- Ball trail (ghosts, darkest first so ball overwrites) ---
+            if (col >= bx3 && col < bx3 + `BALL_SIZE &&
+                row >= by3 && row < by3 + `BALL_SIZE)
+                rgb_out = 12'h333;
+            if (col >= bx2 && col < bx2 + `BALL_SIZE &&
+                row >= by2 && row < by2 + `BALL_SIZE)
+                rgb_out = 12'h777;
+            if (col >= bx1 && col < bx1 + `BALL_SIZE &&
+                row >= by1 && row < by1 + `BALL_SIZE)
+                rgb_out = 12'hBBB;
+
+            // --- Ball (current, overwrites ghosts) ---
             if (col >= ball_x && col < ball_x + `BALL_SIZE &&
                 row >= ball_y && row < ball_y + `BALL_SIZE)
                 rgb_out = COLOR_WHITE;
 
-            // Left paddle
+            // --- Left paddle ---
             if (col >= `LEFT_PADDLE_X && col < `LEFT_PADDLE_X + `PADDLE_W &&
                 row >= paddle_left_y && row < paddle_left_y + `PADDLE_H)
                 rgb_out = COLOR_WHITE;
+            // Left paddle wide extension (gray)
+            if (wide_left && col >= `LEFT_PADDLE_X + `PADDLE_W && col < lp_right &&
+                row >= paddle_left_y && row < paddle_left_y + `PADDLE_H)
+                rgb_out = COLOR_GRAY;
 
-            // Right paddle
+            // --- Right paddle ---
             if (col >= `RIGHT_PADDLE_X && col < `RIGHT_PADDLE_X + `PADDLE_W &&
                 row >= paddle_right_y && row < paddle_right_y + `PADDLE_H)
                 rgb_out = COLOR_WHITE;
+            // Right paddle wide extension (gray)
+            if (wide_right && col >= rp_left && col < `RIGHT_PADDLE_X &&
+                row >= paddle_right_y && row < paddle_right_y + `PADDLE_H)
+                rgb_out = COLOR_GRAY;
 
-            // Score digits
+            // --- Powerup diamond ---
+            if (powerup_active &&
+                col >= powerup_x && col < powerup_x + 6 &&
+                row >= powerup_y && row < powerup_y + 6) begin
+                // Skip corners for diamond shape
+                if (!(((col == powerup_x || col == powerup_x + 5) &&
+                       (row == powerup_y || row == powerup_y + 5))))
+                    rgb_out = COLOR_GREEN;
+            end
+
+            // --- Score digits ---
             if (digit_pixel_on)
                 rgb_out = COLOR_WHITE;
 
-            // Game Over message (highest priority, covers everything behind)
+            // --- Game Over message (highest priority) ---
             if (gameover_pixel_on)
                 rgb_out = COLOR_WHITE;
-
         end else begin
-            rgb_out = COLOR_BLACK;   // blanking period
+            rgb_out = 12'h000;
         end
     end
 

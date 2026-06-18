@@ -14,6 +14,9 @@ module game_logic (
     input  wire        right_down,
     input  wire        start_pause,
     input  wire        soft_reset,
+    // Powerup inputs
+    input  wire        pw_hit_left,
+    input  wire        pw_hit_right,
     // Mode / difficulty selection
     input  wire        ai_enable,      // 0 = two-player, 1 = AI controls right paddle
     input  wire [1:0]  difficulty,     // SW[3:2]: 00=Easy, 01=Hard, 10=Master, 11=Auto
@@ -61,6 +64,12 @@ module game_logic (
     assign game_tick = (tick_counter >= tick_threshold);
 
     // ------------------------------------------------------------------------
+    // Wide paddle indicators (combinational from timers)
+    // ------------------------------------------------------------------------
+    assign wide_left  = (wide_timer_left  > 0);
+    assign wide_right = (wide_timer_right > 0);
+
+    // ------------------------------------------------------------------------
     // Signed temporary signals for position updates and boundary checks
     // ------------------------------------------------------------------------
     wire signed [10:0] next_x_s = $signed({1'b0, ball_x}) + ball_dx;
@@ -70,6 +79,10 @@ module game_logic (
     wire [9:0] ball_center_y  = ball_y  + (`BALL_SIZE  >> 1);
     wire [9:0] pad_l_center_y = paddle_left_y  + (`PADDLE_H >> 1);
     wire [9:0] pad_r_center_y = paddle_right_y + (`PADDLE_H >> 1);
+
+    // Variable-width paddle collision edges (wide mode extends 10 px toward center)
+    wire [9:0] pad_l_right = `LEFT_PADDLE_X + `PADDLE_W + ((wide_timer_left  > 0) ? 10 : 0);
+    wire [9:0] pad_r_left  = `RIGHT_PADDLE_X - ((wide_timer_right > 0) ? 10 : 0);
 
     // ------------------------------------------------------------------------
     // AI paddle control
@@ -134,6 +147,7 @@ module game_logic (
     reg  [19:0] serve_timer;              // delay before auto-serve
     reg         start_pause_d;           // delayed copy for edge detection
     reg         soft_reset_d;            // delayed copy for soft reset edge detection
+    reg  [8:0]  wide_timer_left, wide_timer_right; // wide paddle duration
     reg  [15:0] rand_cnt;                // free-running counter for serve random
     reg         hit_paddle_this;          // pulsed if paddle hit in this tick
 
@@ -181,6 +195,8 @@ module game_logic (
             serve_timer     <= 20'd0;
             start_pause_d   <= 1'b0;
             soft_reset_d    <= 1'b0;
+            wide_timer_left  <= 9'd0;
+            wide_timer_right <= 9'd0;
             rand_cnt        <= 16'd0;
             tick_threshold  <= `TICK_THRESH_SPEED1;
             auto_threshold  <= `TICK_THRESH_SPEED1;
@@ -195,6 +211,12 @@ module game_logic (
             start_pause_d   <= start_pause;   // edge detection
             soft_reset_d    <= soft_reset;    // edge detection for soft reset
             rand_cnt        <= rand_cnt + 1;  // free-running for serve RNG
+
+            // --- Wide paddle timers ---
+            if (wide_timer_left  > 0) wide_timer_left  <= wide_timer_left  - 1;
+            if (wide_timer_right > 0) wide_timer_right <= wide_timer_right - 1;
+            if (pw_hit_left)  wide_timer_left  <= 9'd300;   // ~5 sec at 60 Hz
+            if (pw_hit_right) wide_timer_right <= 9'd300;
 
             // Default: next_* hold current value (prevents X propagation)
             next_state         = game_state;
@@ -317,12 +339,12 @@ module game_logic (
                         hit_paddle_this = 1'b0;
 
                         // --- Left paddle collision ---
-                        if ((next_x_s <= 11'sd30) &&
-                            (next_x_s + 11'sd8 >= 11'sd20) &&
+                        if ((next_x_s <= $signed({1'b0, pad_l_right})) &&
+                            (next_x_s + 11'sd8 >= $signed({1'b0, `LEFT_PADDLE_X})) &&
                             (next_y_s + 11'sd8 > $signed({1'b0, paddle_left_y})) &&
                             (next_y_s < $signed({1'b0, paddle_left_y}) + 11'sd80)) begin
                             hit_paddle_this   = 1'b1;
-                            next_ball_x       = `LEFT_PADDLE_X + `PADDLE_W;
+                            next_ball_x       = pad_l_right;
                             hit_paddle        <= 1'b1;
 
                             // Angle from hit offset -> constant-speed velocity (reduced range)
@@ -346,12 +368,12 @@ module game_logic (
                         end
 
                         // --- Right paddle collision ---
-                        if ((next_x_s + 11'sd8 >= 11'sd610) &&
+                        if ((next_x_s + 11'sd8 >= $signed({1'b0, pad_r_left})) &&
                             (next_x_s <= 11'sd620) &&
                             (next_y_s + 11'sd8 > $signed({1'b0, paddle_right_y})) &&
                             (next_y_s < $signed({1'b0, paddle_right_y}) + 11'sd80)) begin
                             hit_paddle_this   = 1'b1;
-                            next_ball_x       = `RIGHT_PADDLE_X - `BALL_SIZE;
+                            next_ball_x       = pad_r_left - `BALL_SIZE;
                             hit_paddle        <= 1'b1;
 
                             // Angle from hit offset -> constant-speed velocity (reduced range)

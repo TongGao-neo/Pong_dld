@@ -65,10 +65,10 @@ module vga_render (
     end
 
     // ========================================================================
-    // Wide paddle geometry
+    // Wide paddle geometry (vertical: +5 top, +5 bottom)
     // ========================================================================
-    wire [9:0] lp_right = `LEFT_PADDLE_X  + `PADDLE_W + (wide_left  ? 10'd10 : 10'd0);
-    wire [9:0] rp_left  = `RIGHT_PADDLE_X -            (wide_right ? 10'd10 : 10'd0);
+    wire [9:0] lp_top  = paddle_left_y  > 5 ? paddle_left_y  - 5 : 0;
+    wire [9:0] rp_top  = paddle_right_y > 5 ? paddle_right_y - 5 : 0;
 
     // ========================================================================
     // 1. Score digit display
@@ -448,18 +448,30 @@ module vga_render (
             if (col >= `LEFT_PADDLE_X && col < `LEFT_PADDLE_X + `PADDLE_W &&
                 row >= paddle_left_y && row < paddle_left_y + `PADDLE_H)
                 rgb_out = COLOR_WHITE;
-            // Left paddle wide extension (gray)
-            if (wide_left && col >= `LEFT_PADDLE_X + `PADDLE_W && col < lp_right &&
-                row >= paddle_left_y && row < paddle_left_y + `PADDLE_H)
+            // Left paddle top extension (gray)
+            if (wide_left &&
+                col >= `LEFT_PADDLE_X && col < `LEFT_PADDLE_X + `PADDLE_W &&
+                row >= lp_top && row < lp_top + 5)
+                rgb_out = COLOR_GRAY;
+            // Left paddle bottom extension (gray)
+            if (wide_left &&
+                col >= `LEFT_PADDLE_X && col < `LEFT_PADDLE_X + `PADDLE_W &&
+                row >= paddle_left_y + `PADDLE_H && row < paddle_left_y + `PADDLE_H + 5)
                 rgb_out = COLOR_GRAY;
 
             // --- Right paddle ---
             if (col >= `RIGHT_PADDLE_X && col < `RIGHT_PADDLE_X + `PADDLE_W &&
                 row >= paddle_right_y && row < paddle_right_y + `PADDLE_H)
                 rgb_out = COLOR_WHITE;
-            // Right paddle wide extension (gray)
-            if (wide_right && col >= rp_left && col < `RIGHT_PADDLE_X &&
-                row >= paddle_right_y && row < paddle_right_y + `PADDLE_H)
+            // Right paddle top extension (gray)
+            if (wide_right &&
+                col >= `RIGHT_PADDLE_X && col < `RIGHT_PADDLE_X + `PADDLE_W &&
+                row >= rp_top && row < rp_top + 5)
+                rgb_out = COLOR_GRAY;
+            // Right paddle bottom extension (gray)
+            if (wide_right &&
+                col >= `RIGHT_PADDLE_X && col < `RIGHT_PADDLE_X + `PADDLE_W &&
+                row >= paddle_right_y + `PADDLE_H && row < paddle_right_y + `PADDLE_H + 5)
                 rgb_out = COLOR_GRAY;
 
             // --- Powerup diamond ---

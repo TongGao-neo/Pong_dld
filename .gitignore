@@ -1,6 +1,8 @@
 # Vivado project generated files
 vivado_project/
 
+*.xpr
+
 # Simulation waveform data files
 *.wdb
 *.wcfg

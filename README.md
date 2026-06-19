@@ -50,7 +50,7 @@ Pong_Project/
 ├── source_code/
 │   ├── defines.vh              # Global macro definitions
 │   ├── Top.v                   # Top-level module
-│   ├── clk_wiz.v               # Clocking Wizard wrapper (25.175 MHz)
+│   ├── clk_wiz.v               # Clocking Wizard wrapper (25.175 MHz) — Vivado IP Catalog core, see source_code/README.txt
 │   ├── game_logic.v            # State machine, ball physics, paddle control, AI integration
 │   ├── ai_paddle.v             # AI opponent logic
 │   ├── vga_render.v            # VGA image generator (pixel color from coordinates)
@@ -124,7 +124,7 @@ The velocity lookup table keeps total speed approximately constant (|V|≈5).
 - **Joint**: Simulation, debugging, design report
 
 ## Hardware Notes
-- **Clock**: 100 MHz onboard oscillator; MMCM generates 25.175 MHz for VGA and game logic.
+- **Clock**: 100 MHz onboard oscillator; MMCM generates 25.175 MHz for VGA and game logic. The MMCM is configured via Vivado IP Catalog (Clocking Wizard) — clk_wiz.v is a wrapper around the generated IP core. When rebuilding the project, either re-generate the core in Vivado's IP Catalog or implement the clock divider manually. If simulating in Vivado, note that the IP simulation model is loaded automatically; for standalone simulation, generate the clock directly in the testbench.
 - **Matrix Keyboard**: 5 rows (V17, W18, W19, W15, W16) × 4 columns (V18, V19, V14, W14), active-low scan with pull-up on columns.
 - **PS/2**: USB keyboard supported via onboard converter; pins N18 (clock) and M19 (data). Recognizes: W (0x1D), S (0x1B), Space (0x29), Enter (0x5A), Esc (0x76), ↑ (0xE0 0x75), ↓ (0xE0 0x72).
 - **Buzzer**: Passive piezoelectric buzzer (AF25), requires square wave of appropriate frequency for sound.

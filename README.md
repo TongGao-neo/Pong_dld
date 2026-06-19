@@ -294,7 +294,7 @@ Pong_Project/
 - **仿真**：临时将 `defines.vh` 中的 `TICK_MAX`、`SCORE_TIMEOUT` 和 `SCAN_MAX` 改小（如 10）以快速观察波形，综合前恢复原值。
 
 ## 参考资料
-- 课程提供的 VGA 驱动（`vgac.v`）和 PS/2 示例代码（潘子悦设计）
+- 课程提供的 VGA 驱动（`vgac.v`）和 PS/2 示例代码（Pan-Ziyue's design）
 - Logisim 用于辅助电路设计（如数码管译码器）
 
 ## 贡献者
